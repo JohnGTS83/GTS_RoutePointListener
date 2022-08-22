@@ -28,7 +28,7 @@ import com.s5.dto.PushNotificationEmun;
 import com.s5.dto.PushResposeDTO;
 
 public class PushNotification {
-	private static String AUTH_KEY_FCM = "YOUR_API_KEY";
+	private static String AUTH_KEY_FCM = "AAAA_OmItPI:APA91bHuF0RsVw5XTzKJn93xW9d2ed0gTRFTh5X_UPfyzeZbEsRuc63eyBD38HR8H8UNr8rrncE6IPGSLw0zIdEuuoGXs601xun_0PSIZGYQSTVRR_PWBi0CI9uAXLAvBpsd7ApHJW1M";
 	// public final static String AUTH_KEY_FCM = "API_KEY_HERE";
 	public final static String API_URL_FCM = "https://fcm.googleapis.com/fcm/send";
 
@@ -199,4 +199,12 @@ public class PushNotification {
 		}
 		in.close();
 	}
+//	public static void main(String [] arg) {
+//		int flag = 0;
+//		try {
+//			flag = sendNotificationToSmartphone("djqyXAMMS1-Gkmlxk4Ppxp:APA91bFSBhevtzg63PYtyujWHQvVCezosfdwL4ifnWnpL0yM_a6YPZuDTidxv-Vs5kv9gGfuKe1AYzbGR2NvBzBfsc1fn-iKqXHbu5vv2ud_xgY90YTAJL0FvIhNiIT15iKFU2bi8DUp",flag,PushNotificationEmun.BUSREACHEDATSCHOOL,646);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
 }

@@ -1,6 +1,7 @@
 package com.s5.gtl;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -324,6 +325,8 @@ public class GMSDispatcher implements Runnable {
 				
 				if(!rid.isEmpty()) {
 					ResultSet rs1 = null;
+					ResultSet rs2 = null;
+					ResultSet rs3 = null;
 					Calendar cal1 = Calendar.getInstance();
 					long diff = 0;
 					
@@ -381,7 +384,7 @@ public class GMSDispatcher implements Runnable {
 									rs1.close();
 //									System.out.println("Adding/Updating: " + arrId);
 									if(arrId == 0) {
-										sql = "INSERT INTO tdsb_i_run_arrival (route_id, rpid, sn_imei_id, arrival_time,point_order,BusStopId,departure_time,routeId) VALUES(?,?,?,?,?,?,?,?)";
+										sql = "INSERT INTO tdsb_i_run_arrival (route_id, rpid, sn_imei_id, arrival_time,point_order,BusStopId,departure_time,routeId,busStopType) VALUES(?,?,?,?,?,?,?,?,?)";
 										helper.clearParams();
 										helper.addParam(dto.getId());
 										helper.addParam(rpid);
@@ -391,10 +394,11 @@ public class GMSDispatcher implements Runnable {
 										helper.addParam(dto.getStopId());
 										helper.addParam(formatString.format(Date.from(messageDto.getlDate().toInstant().plusSeconds(5))));
 										helper.addParam(dto.getRouteFKId());
+										helper.addParam(dto.getStopType());
 										helper.runQuery(sql);
 										dto.setLateMinuts(diff);
 										processRouteNotification(messageDto,dto);
-										processParentNotification(dto.getId(),busStopIdForParent,dto.getStopType());
+										processParentNotification(dto.getId(),busStopIdForParent,dto.getStopType(),0);
 //											System.out.println("Push notification sent.");
 //											getNextStopIdByBusStopId(dto.getId(),dto.getStopType(),dto.getStopNumber(),StringUtils.trimToEmpty(rsPoints.getString("runGuid")));
 									} else {
@@ -409,6 +413,149 @@ public class GMSDispatcher implements Runnable {
 							}
 						}
 						rsPoints.close();
+						
+						sql = "SELECT top 1 gi.ignitionstatus, ((ACOS(SIN(PI()*gih.latitude/180.0)*SIN(PI()* ? /180.0)+COS(PI()*gih.latitude/180.0)*COS(PI()* ? /180.0)*COS(PI()* ? /180.0-PI()*gih.longitude/180.0))*6371)*1000) AS distanceMet " +
+						        " from gps_info_history gih  WITH(NOLOCK) INNER JOIN [gps_info_last] gi WITH(NOLOCK) ON gi.[sn_imei_id] = gih.[sn_imei_id] " + 
+								" where gih.sn_imei_id= ? AND CONVERT(CHAR(10), gi.l_datetime , 120) = ? AND CONVERT(CHAR(10), gih.l_datetime , 120) = ? " + 
+								" order by gih.l_datetime asc"; 
+						
+							helper.clearParams(); 
+							helper.addParam(messageDto.getLatitude());
+							helper.addParam(messageDto.getLatitude());
+							helper.addParam(messageDto.getLongitude());
+							helper.addParam(messageDto.getSn_imei_id());
+							helper.addParam(formatDateString.format(messageDto.getlDate()));
+							helper.addParam(formatDateString.format(messageDto.getlDate()));
+							String arrIdd = "0" ;
+							ResultSet rsPoints1 = helper.runQueryStreamResults(sql);
+							while(rsPoints1.next()) {
+								long stopDiff = 0;
+								int ignitionStatus = rsPoints1.getInt("ignitionstatus");
+								
+								if(ignitionStatus==144 || ignitionStatus==4) {
+									if(rsPoints1.getDouble("distanceMet") > 250.0) {
+										Date firstTime = getRouteFirstStartTime(day,messageDto,dto.getId());
+										if(firstTime!=null) {
+											stopDiff = DateTimeUtil.timeDiffInMin(firstTime,messageDto.getlDate());	
+										}else {
+											stopDiff=0;
+										}
+										if(stopDiff<20 && stopDiff>15) {
+											
+											helper.clearParams();
+											helper.addParam(1);
+											helper.addParam(messageDto.getSn_imei_id());
+												sql = "SELECT sn_imei_id FROM tdsb_i_run_initial WITH(NOLOCK)";
+												sql += " WHERE morning = ? AND sn_imei_id = ?";
+												sql += " AND CONVERT(CHAR(10), arrival_time , 120) =  ? ";
+												helper.addParam(formatDateString.format(messageDto.getlDate()));
+
+											rs2 = helper.runQueryStreamResults(sql);
+											if(rs2.next()) {
+												arrIdd = rs2.getString("sn_imei_id");
+											} else {
+												arrIdd = "0";
+											}
+
+											rs2.close();
+//											System.out.println("Adding/Updating: " + arrId);
+											if(arrIdd == "0") {
+												sql = "INSERT INTO tdsb_i_run_initial (route_id, sn_imei_id, arrival_time,morning,after_school,departure_time,routeId) VALUES(?,?,?,?,?,?,?)";
+												helper.clearParams();
+												helper.addParam(dto.getId());
+												helper.addParam(messageDto.getSn_imei_id());
+												helper.addParam(formatString.format(messageDto.getlDate()));
+												helper.addParam(1);
+												helper.addParam(0);
+												helper.addParam(formatString.format(Date.from(messageDto.getlDate().toInstant().plusSeconds(5))));
+												helper.addParam(dto.getRouteFKId());
+												helper.runQuery(sql);
+												dto.setLateMinuts(diff);
+												System.out.println("Notification Sent");
+												processParentNotification(dto.getId(),999,"4",999);
+//													System.out.println("Push notification sent.");
+//													getNextStopIdByBusStopId(dto.getId(),dto.getStopType(),dto.getStopNumber(),StringUtils.trimToEmpty(rsPoints.getString("runGuid")));
+											}
+										
+										}
+									
+								    }
+								}
+								
+							}
+							rsPoints1.close();
+							
+							String arrIddd="0";
+							helper.clearParams();
+							helper.addParam(1);
+							helper.addParam(messageDto.getSn_imei_id());
+								sql = "SELECT sn_imei_id FROM tdsb_i_run_initial WITH(NOLOCK)";
+								sql += " WHERE after_school = ? AND sn_imei_id = ?";
+								sql += " AND CONVERT(CHAR(10), arrival_time , 120) =  ? ";
+								helper.addParam(formatDateString.format(messageDto.getlDate()));
+
+							rs3 = helper.runQueryStreamResults(sql);
+							if(rs3.next()) {
+								arrIddd = rs3.getString("sn_imei_id");
+							} else {
+								arrIddd = "0";
+							}
+							rs3.close();
+							
+							if(arrIdd == "0") {
+								sql = "SELECT * FROM tdsb_i_run_arrival t INNER JOIN gps_info_last gi ON t.sn_imei_id = gi.sn_imei_id COLLATE database_default WHERE t.sn_imei_id= ? AND t.busStopType=2 AND CONVERT(CHAR(10), t.arrival_time , 120) = ?"; 
+								
+								helper.clearParams(); 
+								helper.addParam(messageDto.getSn_imei_id());
+								helper.addParam(formatDateString.format(messageDto.getlDate()));
+								ResultSet rsPoints2 = helper.runQueryStreamResults(sql);
+								String busStopid="0";
+								int ignitionStatus=0;
+								if(rsPoints2.next()) {
+									 busStopid = rsPoints2.getString("BusStopId");
+									 ignitionStatus = rsPoints2.getInt("ignitionstatus");
+								}else {
+									busStopid="0";
+								}
+								rsPoints2.close();
+								if(ignitionStatus==144 |ignitionStatus==4) {
+
+									if(busStopid!="0") {
+										sql = "SELECT ((ACOS(SIN(PI()*latitude/180.0)*SIN(PI()* ? /180.0)+COS(PI()*latitude/180.0)*COS(PI()* ? /180.0)*COS(PI()* ? /180.0-PI()*longitude/180.0))*6371)*1000) AS distanceMet " +
+										        " FROM tdsb_i_Runpoints_position WHERE BusstopId =? AND route_point_id = ?"; 
+										
+											helper.clearParams(); 
+											helper.addParam(messageDto.getLatitude());
+											helper.addParam(messageDto.getLatitude());
+											helper.addParam(messageDto.getLongitude());
+											helper.addParam(busStopid);
+											helper.addParam(dto.getId());
+
+											ResultSet rsPoints4 = helper.runQueryStreamResults(sql);
+											Double distanceMeet=0.0;
+											if(rsPoints4.next()) {
+												distanceMeet = rsPoints4.getDouble("distanceMet");
+											}
+											 if(distanceMeet>250 && distanceMeet<400) {
+												sql = "INSERT INTO tdsb_i_run_initial (route_id, sn_imei_id, arrival_time,morning,after_school,departure_time,routeId) VALUES(?,?,?,?,?,?,?)";
+												helper.clearParams();
+												helper.addParam(dto.getId());
+												helper.addParam(messageDto.getSn_imei_id());
+												helper.addParam(formatString.format(messageDto.getlDate()));
+												helper.addParam(0);
+												helper.addParam(1);
+												helper.addParam(formatString.format(Date.from(messageDto.getlDate().toInstant().plusSeconds(5))));
+												helper.addParam(dto.getRouteFKId());
+												helper.runQuery(sql);
+												dto.setLateMinuts(diff);
+												System.out.println(" After School Notification Sent");
+												processParentNotification(dto.getId(),999,"5",999);
+											
+										   }
+								      }			
+								 }
+							}
+								
 					}
 				}
 			} catch (Exception e) {
@@ -418,16 +565,57 @@ public class GMSDispatcher implements Runnable {
 			}
 		}
 	}
+	public static Date getRouteFirstStartTime(String days, MessageDTO messageDto, int rid){
+		QueryHelper helper = new QueryHelper();
+		Calendar cal = Calendar.getInstance();
+		String dt = null;
+		try{
+			String sql = "SELECT  top 1 r.StartTime,r.id as runs_id, rr.route_name,rr.localroute  " + 
+					"						 FROM tdsb_i_run_points r WITH(NOLOCK)  " + 
+					"						 INNER JOIN tdsb_i_route rr WITH(NOLOCK) ON rr.id = r.route_fk_id  " + 
+					"						 INNER JOIN route_tracker_relation rtr WITH(NOLOCK) ON rtr.routeid = rr.id " + 
+					"						 INNER JOIN run_assignment_mapping ar on rtr.id = ar.assignment_id  and ((ar.run_type = '10' and r.id = ar.segment_id ) or (ar.run_type = r.Type ))  " + 
+					"						 WHERE rtr.is_active = 1  AND  r.Active = 1  AND r.ComponentVariation LIKE '%"+days+ "%' " + 
+					"						 AND (rtr.start_date <= GETDATE()) AND (rtr.end_date IS NULL OR rtr.end_date >= GETDATE()) AND rtr.sn_imei_id = ? " + 
+					"						 ORDER BY CONVERT( TIME, StartTime) asc";
+			helper.addParam(messageDto.getSn_imei_id());
+			ResultSet rs = helper.runQueryStreamResults(sql);
+			while(rs.next()){
+				if(rs.getString("StartTime")!=null) {
+					if(rs.getInt("runs_id")==rid) {
+						dt=rs.getString("StartTime");					
+					}
+				}
+			}
+			rs.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			helper.releaseConnection();
+		}
+		String da=formatDateString.format(messageDto.getlDate())+" "+dt;
+		return DateTimeUtil.parseToDateTimeWitoutTz(da, "yyyy-MM-dd hh:mm aa");
+	}
 	
-	public static boolean processParentNotification(int runid,int busStopID, String getStopType) {
+	public static boolean processParentNotification(int runid,int busStopID, String getStopType, int notiType) {
 		boolean done = false;
 		QueryHelper qh = new QueryHelper();
-		String sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ? and pr.BusStopID = ?";
 		try {
-			qh.addParam(runid);
-			qh.addParam(busStopID);
-			qh.setTimeoutInSec(2);
+			String sql="";
+		if(notiType==999) {
+			sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ?";
+				qh.addParam(runid);
+				qh.setTimeoutInSec(2);
+				
+		} else {
+			sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ? and pr.BusStopID = ?";
+				qh.addParam(runid);
+				qh.addParam(busStopID);
+				qh.setTimeoutInSec(2);
+			
+		}
 			ResultSet rs = qh.runQueryStreamResults(sql);
+
 			ArrayList<ParentDTO> list = new ArrayList<ParentDTO>(); 
 			ArrayList<String> checkList = new ArrayList<>();
 			while (rs.next()) {
@@ -458,6 +646,10 @@ public class GMSDispatcher implements Runnable {
 					getExactDetails = PushNotificationEmun.BUSRREADYFORDROP;
 				} else if(getStopType.equalsIgnoreCase("3")) {
 					getExactDetails = PushNotificationEmun.BUSREACHEDATSCHOOL;
+				} else if(getStopType.equalsIgnoreCase("4")) {
+					getExactDetails = PushNotificationEmun.BUSREACHEDATFIRSTSTOP;
+				} else if(getStopType.equalsIgnoreCase("5")) {
+					getExactDetails = PushNotificationEmun.BUSRREADYFORDROPAFTER;
 				} else {
 					/*
 					sql = "SELECT TOP 1 b.id FROM tdsb_i_BusStopBasic b WITH(NOLOCK) "
@@ -562,4 +754,15 @@ public class GMSDispatcher implements Runnable {
 			helperNotification.releaseConnection();
 		}
 	}
+//	public static void main(String [] arg) {
+//		try {
+//			String routeWorkString = "860147041668003"+"|" + 44.073046646326 + "|" + -80.1798895204029 + "|" + 86014133 + "|"+1+"|"+"2022-05-30 12:00:58.17";
+//			GMSDispatcher gms=new GMSDispatcher(routeWorkString);
+//			gms.run();
+//			System.out.println("Final ");
+//		
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
 }
