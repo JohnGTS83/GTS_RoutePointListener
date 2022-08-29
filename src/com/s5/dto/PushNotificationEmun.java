@@ -26,8 +26,8 @@ public class PushNotificationEmun {
 	
 	public static final String BUSONTHEWAYFORPICKUPTEXT ="The School vehicle has started the route, please expect the pick up in some time.";
 	public static final String BUSONTHEWAYFORDROPTEXT ="The School vehicle has started the route, please expect the drop off in some time.";
-	public static final String BUSREACHEDATFIRSTSTOPTEXT ="The Bus has started ignition and will reach to your stop soon.";
-	public static final String BUSREACHEDATSCHOOLAFTERTEXT ="The Bus has started ignition from school and will reach to your stop soon.";
+	public static final String BUSREACHEDATFIRSTSTOPTEXT ="The bus has started your route.";
+	public static final String BUSREACHEDATSCHOOLAFTERTEXT ="The Bus has started the route and will arrive shortly.";
 
 	public static String getTitleStringFromType(int enumType){
 		return "GT Guardian";

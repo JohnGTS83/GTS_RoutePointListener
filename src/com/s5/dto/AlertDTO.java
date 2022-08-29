@@ -11,8 +11,15 @@ public class AlertDTO {
 	String stopDesc;
 	String stopId;
 	String fromProvider;
+	int type;
 	
 	
+	public int getType() {
+		return type;
+	}
+	public void setType(int type) {
+		this.type = type;
+	}
 	long lateMinuts;
 	String starTime;
 	String endTime;
