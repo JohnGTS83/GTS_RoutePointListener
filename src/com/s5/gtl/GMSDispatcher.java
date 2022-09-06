@@ -402,7 +402,7 @@ public class GMSDispatcher implements Runnable {
 										helper.addParam(dto.getStopId());
 										helper.addParam(formatString.format(Date.from(messageDto.getlDate().toInstant().plusSeconds(5))));
 										helper.addParam(dto.getRouteFKId());
-										helper.addParam(dto.getStopType());
+										helper.addParam(getStopType(dto.getStopType()));
 										helper.runQuery(sql);
 										dto.setLateMinuts(diff);
 										processRouteNotification(messageDto,dto);
@@ -429,6 +429,46 @@ public class GMSDispatcher implements Runnable {
 				helper.releaseConnection();
 			}
 		}
+	}
+	private int getStopType(String stop) {
+		int newStop=4;
+		
+		if(stop.equalsIgnoreCase("1")) {
+			newStop =1;
+		}
+		
+
+		if(stop.equalsIgnoreCase("2")) {
+			newStop =2;
+		}
+		
+
+		if(stop.equalsIgnoreCase("3")) {
+			newStop =3;
+		}
+		
+
+		if(stop.equalsIgnoreCase("0")) {
+			newStop =0;
+		}
+		
+		if(stop.equalsIgnoreCase("PICKUP")) {
+			newStop =0;
+		}
+		
+		if(stop.equalsIgnoreCase("DROPOFF")) {
+			newStop =1;
+		}
+		
+		if(stop.equalsIgnoreCase("SCHOOL_PICKUP")) {
+			newStop =2;
+		}
+		
+		if(stop.equalsIgnoreCase("SCHOOL_DROPOFF")) {
+			newStop =3;
+		}
+		
+		return newStop;
 	}
 	public static String getRunFirstStartTime(int rid){
 		QueryHelper helper = new QueryHelper();

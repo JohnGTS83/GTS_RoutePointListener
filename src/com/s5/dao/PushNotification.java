@@ -28,7 +28,7 @@ import com.s5.dto.PushNotificationEmun;
 import com.s5.dto.PushResposeDTO;
 
 public class PushNotification {
-	private static String AUTH_KEY_FCM = "AAAA_OmItPI:APA91bHuF0RsVw5XTzKJn93xW9d2ed0gTRFTh5X_UPfyzeZbEsRuc63eyBD38HR8H8UNr8rrncE6IPGSLw0zIdEuuoGXs601xun_0PSIZGYQSTVRR_PWBi0CI9uAXLAvBpsd7ApHJW1M";
+	private static String AUTH_KEY_FCM = "AAAAAvsDvbo:APA91bHPQEWJpQ9vI6BqKzRO1fL5iSTEB2aKWlO2mbeunXjO9L5OGdOmdPxIhjFhbSrkzMKIvU3rf90tTVhN2-qU7YzPCtK_Zk4TBYHLIm0EBFlohGP5UeGb-aN6Lk4CmXc1GxFygcU-";
 	// public final static String AUTH_KEY_FCM = "API_KEY_HERE";
 	public final static String API_URL_FCM = "https://fcm.googleapis.com/fcm/send";
 
@@ -202,7 +202,7 @@ public class PushNotification {
 //	public static void main(String [] arg) {
 //		int flag = 0;
 //		try {
-//			flag = sendNotificationToSmartphone("djqyXAMMS1-Gkmlxk4Ppxp:APA91bFSBhevtzg63PYtyujWHQvVCezosfdwL4ifnWnpL0yM_a6YPZuDTidxv-Vs5kv9gGfuKe1AYzbGR2NvBzBfsc1fn-iKqXHbu5vv2ud_xgY90YTAJL0FvIhNiIT15iKFU2bi8DUp",flag,PushNotificationEmun.BUSREACHEDATSCHOOL,646);
+//			flag = sendNotificationToSmartphone("ffOVsTsGT3i0ffpP-9Ra4N:APA91bEtOow00txHslU_2nhHxeYpxa_S26ev7r-T6TarntL4IL7lO7DSoFNTOSF_-NKbviHFvmt20v0EPDpJobb34TvxU0UGhq26pMlyg9d_9kvgU29efQVyzlSfit63GJTWW45i6_j4",flag,PushNotificationEmun.BUSREACHEDATSCHOOL,646);
 //		} catch (Exception e) {
 //			e.printStackTrace();
 //		}
