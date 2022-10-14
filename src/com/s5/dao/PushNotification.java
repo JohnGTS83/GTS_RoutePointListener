@@ -29,7 +29,7 @@ import com.s5.dto.PushResposeDTO;
 
 public class PushNotification {
 	private static String AUTH_KEY_FCM = "AAAAAvsDvbo:APA91bHPQEWJpQ9vI6BqKzRO1fL5iSTEB2aKWlO2mbeunXjO9L5OGdOmdPxIhjFhbSrkzMKIvU3rf90tTVhN2-qU7YzPCtK_Zk4TBYHLIm0EBFlohGP5UeGb-aN6Lk4CmXc1GxFygcU-";
-	// public final static String AUTH_KEY_FCM = "API_KEY_HERE";
+	 public final static String AUTH_KEY_FCM_IOS = "AAAAAy5e4sw:APA91bHBInXo3-pFxPDWjQcY3A0gcadMK0zhYUWnZiPcYqCDgaXj0oDDnqY-jtVHolG0IYTOI2NUrZ27eyMq_3A7kcLaAF0MbiBQ9AuJFgNW9NkN6gnnV9btBGwadBBKABnJ08bG0dqz";
 	public final static String API_URL_FCM = "https://fcm.googleapis.com/fcm/send";
 
 	//IOS
@@ -100,7 +100,7 @@ public class PushNotification {
 			StringEntity postDataEn = new StringEntity(notification.toString());
 			CloseableHttpClient client = HttpClients.createDefault();
 			HttpPost httppost = new HttpPost(API_URL_FCM);
-			httppost.setHeader("Authorization" , "key=" + AUTH_KEY_FCM);
+			httppost.setHeader("Authorization" , "key=" + AUTH_KEY_FCM_IOS);
 			httppost.setHeader("Content-Type"  , "application/json");
 			httppost.setEntity(postDataEn);
 			CloseableHttpResponse response = client.execute(httppost);
@@ -202,7 +202,9 @@ public class PushNotification {
 //	public static void main(String [] arg) {
 //		int flag = 0;
 //		try {
-//			flag = sendNotificationToSmartphone("ffOVsTsGT3i0ffpP-9Ra4N:APA91bEtOow00txHslU_2nhHxeYpxa_S26ev7r-T6TarntL4IL7lO7DSoFNTOSF_-NKbviHFvmt20v0EPDpJobb34TvxU0UGhq26pMlyg9d_9kvgU29efQVyzlSfit63GJTWW45i6_j4",flag,PushNotificationEmun.BUSREACHEDATSCHOOL,646);
+//			
+//			
+//			flag = sendNotificationToSmartphone("eNq1Spxg50l_hXEjYzmddi:APA91bEmDzn6ruNhDM-JRb02tkfx_efCY9fIcu4mbHRcu-r5T7dDNd1SkTLrAJ4XeChPerck9R9plxqjW_Mrdy8unkVNqpdXQp-mbUnaoa1oH_rnQ2iQJ1o4Pwv_athbjMq5cRPTZGYp",flag,PushNotificationEmun.BUSREACHEDATSCHOOL,646);
 //		} catch (Exception e) {
 //			e.printStackTrace();
 //		}
