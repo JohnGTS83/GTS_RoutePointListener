@@ -237,7 +237,6 @@ public class GMSDispatcher implements Runnable {
 //								Update TimeDiff: 59, 861836055839273, 28292, rpid: 7349 : 59 Wed Sep 08 07:28:00 EDT 2021 2021-09-08 12:28:27
 //								Update TimeDiff: 18, 861412043053052, 28441, rpid: 7401 : 18 Wed Sep 08 07:28:00 EDT 2021 2021-09-08 13:09:23 : 2021-09-08 07:09:23.0 : Wed Sep 08 07:09:23 EDT 2021
 								if(checkInId == 0) {
-									System.out.println("Driver Check In TimeDiff: "+diff + ", " + messageDto.getSn_imei_id() + ", "+dto.getId()+", rpid: "+dto.getRouteFKId() + " : "+ diff + " " + cal1.getTime() + " " + messageDto.getL_datetime() + " : " + formatString.format(messageDto.getlDate()) + " : " + messageDto.getlDate());
 //									Date now = new Date();
 									sql = "INSERT INTO driver_checks (sn_imei_id,driver_id,check_time,key_id,is_check_in,route_id,is_valid_checkin,run_id,latitude,longitude) VALUES (?,?,?,?,?,?,1,?,?,?)";
 									helper.clearParams();
@@ -406,7 +405,8 @@ public class GMSDispatcher implements Runnable {
 										helper.runQuery(sql);
 										dto.setLateMinuts(diff);
 										processRouteNotification(messageDto,dto);
-										processParentNotification(dto.getId(),busStopIdForParent,dto.getStopType(),0);
+										processParentNotification(dto.getId(),busStopIdForParent,getStopType(dto.getStopType())+"",0);
+
 //											System.out.println("Push notification sent.");
 //											getNextStopIdByBusStopId(dto.getId(),dto.getStopType(),dto.getStopNumber(),StringUtils.trimToEmpty(rsPoints.getString("runGuid")));
 									} else {
@@ -505,7 +505,7 @@ public class GMSDispatcher implements Runnable {
 		QueryHelper qh = new QueryHelper();
 		try {
 			String sql="";
-		if(notiType==999) {
+		if(notiType==999 || getStopType.equalsIgnoreCase("2") || getStopType.equalsIgnoreCase("3")) {
 			sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ?";
 				qh.addParam(runid);
 				qh.setTimeoutInSec(2);
@@ -554,6 +554,7 @@ public class GMSDispatcher implements Runnable {
 				} else if(getStopType.equalsIgnoreCase("5")) {
 					getExactDetails = PushNotificationEmun.BUSRREADYFORDROPAFTER;
 				} else {
+					System.out.println("RunID "+runid+"   BusId  "+ busStopID+" StopType "+getStopType+" Noti "+notiType);
 					/*
 					sql = "SELECT TOP 1 b.id FROM tdsb_i_BusStopBasic b WITH(NOLOCK) "
 							+ "INNER JOIN tdsb_i_runpoints_position rp WITH(NOLOCK) ON b.busStopGuid = rp.busStopGuid "
@@ -779,7 +780,7 @@ public class GMSDispatcher implements Runnable {
 									@Override
 									public void run() {
 										
-										System.out.println("CheckOut Thread called ");
+										System.out.println("CheckOut Thread called "+cal.getTime());
 										QueryHelper qh = new QueryHelper();
 										try {
 											ResultSet rs3 = null;
@@ -816,7 +817,7 @@ public class GMSDispatcher implements Runnable {
 											long newDiff = DateTimeUtil.timeDiffInMin(cal.getTime(),cal2.getTime());
 											newDiff+=60;
 											System.out.println(cal2.getTime()+" current date & first date"+cal.getTime() + "Diff "+newDiff);
-											if(newDiff<0) {
+											if(newDiff>720 || newDiff<-720) {
 												this.cancel();
 												System.out.println("Looks like Time is already gone");
 											}
@@ -905,13 +906,8 @@ public class GMSDispatcher implements Runnable {
 					      }
 					};
 					service.submit(notifyOutRunnable);
-				}
-				
-				
-			}else {
-				System.out.println(sn_imei_id+ " No Parent on Run");
+				}	
 			}
-			
 		} catch(Exception e) {
 			 e.printStackTrace();
 		} finally {
