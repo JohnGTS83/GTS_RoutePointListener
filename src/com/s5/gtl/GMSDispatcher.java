@@ -523,7 +523,7 @@ public class GMSDispatcher implements Runnable {
 			ArrayList<String> checkList = new ArrayList<>();
 			while (rs.next()) {
 				String token = StringUtils.trimToEmpty(rs.getString("tokenKey"));
-				if(checkList.indexOf(token)==-1) {
+				if(!checkList.contains(token)) {
 					ParentDTO parent = new ParentDTO();
 					parent.setTokenid(rs.getLong("tokenid")); 
 					parent.setParentId(rs.getInt("id"));
@@ -567,7 +567,7 @@ public class GMSDispatcher implements Runnable {
 				if(getExactDetails != 0) {
 					if(StringUtils.isNotEmpty(parentDTO.getTokenKey())) {
 						done = true;
-						System.out.println(parentDTO.toString());
+						System.out.println(parentDTO.getTokenKey());
 						if(parentDTO.getPlatform().equals("ios"))
 							PushNotification.sendNotificationToSmartphone(parentDTO.getTokenKey(),0,getExactDetails,parentDTO.getTokenid());
 						else
@@ -691,7 +691,7 @@ public class GMSDispatcher implements Runnable {
 				
 				long diff = DateTimeUtil.timeDiffInMin(cal.getTime(),currenttime);
 				final long scheduleMinute = diff - 15;
-				if(scheduleMinute>1 && isCheckIn==0) {
+				if(scheduleMinute>-15 && isCheckIn==0) {
 					 
 					Runnable notifyCheckInRunnable = new Runnable() {
 					      public void run(){
@@ -761,7 +761,11 @@ public class GMSDispatcher implements Runnable {
 										}
 									}
 								  };
-								  new Timer().schedule(task, scheduleMinute*60*1000);
+								  if(scheduleMinute<0) {
+									  new Timer().schedule(task,1000,20*1000);
+								  }else {
+									  new Timer().schedule(task, scheduleMinute*60*1000,20*1000);
+								  }
 					          } catch (Exception e) {
 					              e.printStackTrace();
 					              System.out.println("CheckIn Thread isInterrepted");
@@ -770,7 +774,7 @@ public class GMSDispatcher implements Runnable {
 					};
 					service.submit(notifyCheckInRunnable);		
 					
-				}else if(diff > 0) {
+				}else if(diff > 0 && isCheckIn==1) {
 					Runnable notifyOutRunnable = new Runnable() {
 					      public void run(){
 					    	 
