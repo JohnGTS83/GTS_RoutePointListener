@@ -7,10 +7,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -405,7 +407,7 @@ public class GMSDispatcher implements Runnable {
 										helper.runQuery(sql);
 										dto.setLateMinuts(diff);
 										processRouteNotification(messageDto,dto);
-										processParentNotification(dto.getId(),busStopIdForParent,getStopType(dto.getStopType())+"",0);
+										processParentNotification(dto.getId(),busStopIdForParent,getStopType(dto.getStopType())+"",0,dto.getStopId());
 
 //											System.out.println("Push notification sent.");
 //											getNextStopIdByBusStopId(dto.getId(),dto.getStopType(),dto.getStopNumber(),StringUtils.trimToEmpty(rsPoints.getString("runGuid")));
@@ -430,7 +432,7 @@ public class GMSDispatcher implements Runnable {
 			}
 		}
 	}
-	private int getStopType(String stop) {
+	private static int getStopType(String stop) {
 		int newStop=4;
 		
 		if(stop.equalsIgnoreCase("1")) {
@@ -500,16 +502,175 @@ public class GMSDispatcher implements Runnable {
 		return dt;
 	}
 	
-	public static boolean processParentNotification(int runid,int busStopID, String getStopType, int notiType) {
+	public static boolean processParentNotification(int runid,int busStopID, String getStopType, int notiType,String busStopId) {
 		boolean done = false;
 		QueryHelper qh = new QueryHelper();
 		try {
 			String sql="";
 		if(notiType==999 || getStopType.equalsIgnoreCase("2") || getStopType.equalsIgnoreCase("3")) {
-			sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ?";
+			if(getStopType.equalsIgnoreCase("3")) {
+				
+				sql = " SELECT tb.* FROM tdsb_i_Runpoints_position tr inner join tdsb_i_BusStopBasic tb WITH(NOLOCK) ON tr.busStopGuid = tb.busStopGuid where route_point_id = ? and tr.active=1 order by tr.orderNumber";
 				qh.addParam(runid);
 				qh.setTimeoutInSec(2);
+				ResultSet rs20 = qh.runQueryStreamResults(sql);
+				ArrayList<AlertDTO> stopDto = new ArrayList<AlertDTO>();
+
+				while (rs20.next()) {
+					AlertDTO stop = new AlertDTO();
+					stop.setStopId(StringUtils.trimToEmpty(rs20.getString("BusStopID")));
+					stop.setStopNumber(rs20.getInt("OrderNumber"));
+					stop.setType(getStopType(rs20.getString("StopType")));
+					stop.setId(rs20.getInt("id"));
+					stopDto.add(stop);
+				}
+				List<AlertDTO> schoolStopDto = stopDto.stream()
+					      .filter(stopp -> stopp.getType()==3)
+					      .collect(Collectors.toList());
+				System.out.println("AM check size  : " +schoolStopDto.size()+"    "+stopDto.size());
 				
+				schoolStopDto.sort((o1, o2)-> o1.getStopNumber()-o2.getStopNumber());
+				if(schoolStopDto.size()>1) {
+					if(busStopId.equalsIgnoreCase(schoolStopDto.get(0).getStopId())) {
+						System.out.println("AM FirstStop :"+busStopId);
+						int orderNumber = schoolStopDto.get(0).getStopNumber();
+						List<AlertDTO> orderStopDto = stopDto.stream()
+							      .filter(stopp -> stopp.getStopNumber()<orderNumber)
+							      .collect(Collectors.toList());
+						String parentIds =""; 
+						for(AlertDTO parentStop:orderStopDto) {
+							if("".equalsIgnoreCase(parentIds)){
+								parentIds = "" +  parentStop.getId()+ "";
+							}else{
+								parentIds += "," +parentStop.getId()+ "";
+							}
+						}
+						System.out.println("AM First parent Stops Size :"+parentIds);
+
+						sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ? and pr.BusStopID in (?)";
+						qh.addParam(runid);
+						qh.addParam(parentIds);
+						qh.setTimeoutInSec(2);
+					
+						
+					}else if(busStopId.equalsIgnoreCase(schoolStopDto.get(1).getStopId())){
+						System.out.println("AM SecondStop :"+busStopId);
+						int orderNumber = schoolStopDto.get(1).getStopNumber();
+						List<AlertDTO> orderStopDto = stopDto.stream()
+							      .filter(stopp -> stopp.getStopNumber()<orderNumber && stopp.getStopNumber()>schoolStopDto.get(0).getStopNumber())
+							      .collect(Collectors.toList());
+						String parentIds =""; 
+						for(AlertDTO parentStop:orderStopDto) {
+							if("".equalsIgnoreCase(parentIds)){
+								parentIds = "" +  parentStop.getId()+ "";
+							}else{
+								parentIds += "," +parentStop.getId()+ "";
+							}
+						}
+						System.out.println("AM Second parent Stops Size :"+parentIds);
+
+						sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ? and pr.BusStopID in (?)";
+						qh.addParam(runid);
+						qh.addParam(parentIds);
+						qh.setTimeoutInSec(2);
+					
+					}else {
+						System.out.println("AM NoStop :"+busStopId);
+						 sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ?";
+							qh.addParam(runid);
+							qh.setTimeoutInSec(2);
+					}
+				}else {
+					 sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ?";
+						qh.addParam(runid);
+						qh.setTimeoutInSec(2);
+				}
+			}else if(getStopType.equalsIgnoreCase("2")) {
+				sql = " SELECT tb.* FROM tdsb_i_Runpoints_position tr inner join tdsb_i_BusStopBasic tb WITH(NOLOCK) ON tr.busStopGuid = tb.busStopGuid where route_point_id = ? and tr.active=1 order by tr.orderNumber";
+				qh.addParam(runid);
+				qh.setTimeoutInSec(2);
+				ResultSet rs20 = qh.runQueryStreamResults(sql);
+				ArrayList<AlertDTO> stopDto = new ArrayList<AlertDTO>();
+
+				while (rs20.next()) {
+					AlertDTO stop = new AlertDTO();
+					stop.setStopId(StringUtils.trimToEmpty(rs20.getString("BusStopID")));
+					stop.setStopNumber(rs20.getInt("OrderNumber"));
+					stop.setType(getStopType(rs20.getString("StopType")));
+					stop.setId(rs20.getInt("id"));
+					stopDto.add(stop);
+				}	
+					List<AlertDTO> schoolStopDto = stopDto.stream()
+					      .filter(stopp -> stopp.getType()==2)
+					      .collect(Collectors.toList());
+				System.out.println("PM check size  : " +schoolStopDto.size()+"    "+stopDto.size());
+				
+				schoolStopDto.sort((o1, o2)-> o1.getStopNumber()-o2.getStopNumber());
+				if(schoolStopDto.size()>1) {
+					
+					
+					if(busStopId.equalsIgnoreCase(schoolStopDto.get(0).getStopId())) {
+						System.out.println("PM FirstStop :"+busStopId);
+						int orderNumber = schoolStopDto.get(0).getStopNumber();
+						List<AlertDTO> orderStopDto = stopDto.stream()
+							      .filter(stopp -> stopp.getStopNumber()>orderNumber && stopp.getStopNumber()<schoolStopDto.get(1).getStopNumber())
+							      .collect(Collectors.toList());
+						String parentIds =""; 
+						for(AlertDTO parentStop:orderStopDto) {
+							if("".equalsIgnoreCase(parentIds)){
+								parentIds = "'" +  parentStop.getId()+ "'";
+							}else{
+								parentIds += ",'" +parentStop.getId()+ "'";
+							}
+						}
+						System.out.println("PM First parent Stops Size :"+parentIds);
+
+						sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ? and pr.BusStopID in (?)";
+						qh.addParam(runid);
+						qh.addParam(parentIds);
+						qh.setTimeoutInSec(2);
+					
+						
+					}else if(busStopId.equalsIgnoreCase(schoolStopDto.get(1).getStopId())){
+						System.out.println("PM SecondStop :"+busStopId);
+						int orderNumber = schoolStopDto.get(1).getStopNumber();
+						List<AlertDTO> orderStopDto = stopDto.stream()
+							      .filter(stopp -> stopp.getStopNumber()>orderNumber)
+							      .collect(Collectors.toList());
+						String parentIds =""; 
+						for(AlertDTO parentStop:orderStopDto) {
+							if("".equalsIgnoreCase(parentIds)){
+								parentIds = "'" +  parentStop.getId()+ "'";
+							}else{
+								parentIds += ",'" +parentStop.getId()+ "'";
+							}
+						}
+						System.out.println("PM Second parent Stops Size :"+parentIds);
+
+						sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ? and pr.BusStopID in (?)";
+						qh.addParam(runid);
+						qh.addParam(parentIds);
+						qh.setTimeoutInSec(2);
+					
+					}else {
+						System.out.println("PM NoStop :"+busStopId);
+						 sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ?";
+							qh.addParam(runid);
+							qh.setTimeoutInSec(2);
+					}
+					
+					
+				}else {
+					 sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ?";
+						qh.addParam(runid);
+						qh.setTimeoutInSec(2);	
+				}
+				
+			}else {
+			    sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ?";
+				qh.addParam(runid);
+				qh.setTimeoutInSec(2);				
+			}	
 		} else {
 			sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ? and pr.BusStopID = ?";
 				qh.addParam(runid);
@@ -746,7 +907,7 @@ public class GMSDispatcher implements Runnable {
 																helper.addParam(runID);
 																helper.runQuery(sql);
 																System.out.println("Notification Sent");
-																processParentNotification(runID,999,"4",999);
+																processParentNotification(runID,999,"4",999,"");
 																this.cancel();
 															}
 														}
@@ -874,7 +1035,7 @@ public class GMSDispatcher implements Runnable {
 																qh.addParam(runID);
 																qh.runQuery(sql);
 																System.out.println(" After School Notification Sent");
-																processParentNotification(runID,999,"5",999);
+																processParentNotification(runID,999,"5",999,"");
 																this.cancel();
 																
 															}
@@ -923,9 +1084,9 @@ public class GMSDispatcher implements Runnable {
 //		try {
 //			String routeWorkString = "860147041678507"+"|" + 44.073046646326 + "|" + -80.1798895204029 + "|" + 86014133 + "|"+2+"|"+"2022-08-26 19:00:58.17";
 //			GMSDispatcher gms=new GMSDispatcher(routeWorkString);
-//			gms.run();
+////			gms.run();
 //			System.out.println("Final ");
-//		
+//			processParentNotification(28349,0, "3", 0,"ERES00004_SD");
 //		} catch (Exception e) {
 //			e.printStackTrace();
 //		}
