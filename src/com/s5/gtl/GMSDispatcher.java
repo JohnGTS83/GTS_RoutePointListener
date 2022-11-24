@@ -527,12 +527,10 @@ public class GMSDispatcher implements Runnable {
 				List<AlertDTO> schoolStopDto = stopDto.stream()
 					      .filter(stopp -> stopp.getType()==3)
 					      .collect(Collectors.toList());
-				System.out.println("AM check size  : " +schoolStopDto.size()+"    "+stopDto.size());
 				
 				schoolStopDto.sort((o1, o2)-> o1.getStopNumber()-o2.getStopNumber());
 				if(schoolStopDto.size()>1) {
 					if(busStopId.equalsIgnoreCase(schoolStopDto.get(0).getStopId())) {
-						System.out.println("AM FirstStop :"+busStopId);
 						int orderNumber = schoolStopDto.get(0).getStopNumber();
 						List<AlertDTO> orderStopDto = stopDto.stream()
 							      .filter(stopp -> stopp.getStopNumber()<orderNumber)
@@ -540,21 +538,21 @@ public class GMSDispatcher implements Runnable {
 						String parentIds =""; 
 						for(AlertDTO parentStop:orderStopDto) {
 							if("".equalsIgnoreCase(parentIds)){
-								parentIds = "" +  parentStop.getId()+ "";
+								parentIds = "'" +  parentStop.getId()+ "'";
 							}else{
-								parentIds += "," +parentStop.getId()+ "";
+								parentIds += ",'" +parentStop.getId()+ "'";
 							}
 						}
-						System.out.println("AM First parent Stops Size :"+parentIds);
 
-						sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ? and pr.BusStopID in (?)";
+						if("".equalsIgnoreCase(parentIds)) {
+							parentIds = "'" +  0+ "'";
+						}
+						sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ? and pr.BusStopID in ("+parentIds+")";
 						qh.addParam(runid);
-						qh.addParam(parentIds);
 						qh.setTimeoutInSec(2);
-					
+
 						
 					}else if(busStopId.equalsIgnoreCase(schoolStopDto.get(1).getStopId())){
-						System.out.println("AM SecondStop :"+busStopId);
 						int orderNumber = schoolStopDto.get(1).getStopNumber();
 						List<AlertDTO> orderStopDto = stopDto.stream()
 							      .filter(stopp -> stopp.getStopNumber()<orderNumber && stopp.getStopNumber()>schoolStopDto.get(0).getStopNumber())
@@ -562,20 +560,20 @@ public class GMSDispatcher implements Runnable {
 						String parentIds =""; 
 						for(AlertDTO parentStop:orderStopDto) {
 							if("".equalsIgnoreCase(parentIds)){
-								parentIds = "" +  parentStop.getId()+ "";
+								parentIds = "'" +  parentStop.getId()+ "'";
 							}else{
-								parentIds += "," +parentStop.getId()+ "";
+								parentIds += ",'" +parentStop.getId()+ "'";
 							}
 						}
-						System.out.println("AM Second parent Stops Size :"+parentIds);
-
-						sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ? and pr.BusStopID in (?)";
+						if("".equalsIgnoreCase(parentIds)) {
+							parentIds = "'" +  0+ "'";
+						}
+						sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ? and pr.BusStopID in ("+parentIds+")";
 						qh.addParam(runid);
-						qh.addParam(parentIds);
 						qh.setTimeoutInSec(2);
+
 					
 					}else {
-						System.out.println("AM NoStop :"+busStopId);
 						 sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ?";
 							qh.addParam(runid);
 							qh.setTimeoutInSec(2);
@@ -603,14 +601,12 @@ public class GMSDispatcher implements Runnable {
 					List<AlertDTO> schoolStopDto = stopDto.stream()
 					      .filter(stopp -> stopp.getType()==2)
 					      .collect(Collectors.toList());
-				System.out.println("PM check size  : " +schoolStopDto.size()+"    "+stopDto.size());
 				
 				schoolStopDto.sort((o1, o2)-> o1.getStopNumber()-o2.getStopNumber());
 				if(schoolStopDto.size()>1) {
 					
 					
 					if(busStopId.equalsIgnoreCase(schoolStopDto.get(0).getStopId())) {
-						System.out.println("PM FirstStop :"+busStopId);
 						int orderNumber = schoolStopDto.get(0).getStopNumber();
 						List<AlertDTO> orderStopDto = stopDto.stream()
 							      .filter(stopp -> stopp.getStopNumber()>orderNumber && stopp.getStopNumber()<schoolStopDto.get(1).getStopNumber())
@@ -623,16 +619,15 @@ public class GMSDispatcher implements Runnable {
 								parentIds += ",'" +parentStop.getId()+ "'";
 							}
 						}
-						System.out.println("PM First parent Stops Size :"+parentIds);
-
-						sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ? and pr.BusStopID in (?)";
+						if("".equalsIgnoreCase(parentIds)) {
+							parentIds = "'" +  0+ "'";
+						}
+						sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ? and pr.BusStopID in ("+parentIds+")";
 						qh.addParam(runid);
-						qh.addParam(parentIds);
 						qh.setTimeoutInSec(2);
-					
+
 						
 					}else if(busStopId.equalsIgnoreCase(schoolStopDto.get(1).getStopId())){
-						System.out.println("PM SecondStop :"+busStopId);
 						int orderNumber = schoolStopDto.get(1).getStopNumber();
 						List<AlertDTO> orderStopDto = stopDto.stream()
 							      .filter(stopp -> stopp.getStopNumber()>orderNumber)
@@ -645,15 +640,14 @@ public class GMSDispatcher implements Runnable {
 								parentIds += ",'" +parentStop.getId()+ "'";
 							}
 						}
-						System.out.println("PM Second parent Stops Size :"+parentIds);
-
-						sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ? and pr.BusStopID in (?)";
+						if("".equalsIgnoreCase(parentIds)) {
+							parentIds = "'" +  0+ "'";
+						}
+						sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ? and pr.BusStopID in ("+parentIds+")";
 						qh.addParam(runid);
-						qh.addParam(parentIds);
 						qh.setTimeoutInSec(2);
-					
+
 					}else {
-						System.out.println("PM NoStop :"+busStopId);
 						 sql = "SELECT m.id as tokenid,m.tokenKey,m.devicePlatform,pr.BusStopID,pr.id FROM student_parent_relation pr WITH(NOLOCK) INNER JOIN parent_token_mapping m WITH(NOLOCK) ON pr.parent_id = m.parentId AND m.isActive = 1 WHERE pr.run_id = ?";
 							qh.addParam(runid);
 							qh.setTimeoutInSec(2);
@@ -715,7 +709,6 @@ public class GMSDispatcher implements Runnable {
 				} else if(getStopType.equalsIgnoreCase("5")) {
 					getExactDetails = PushNotificationEmun.BUSRREADYFORDROPAFTER;
 				} else {
-					System.out.println("RunID "+runid+"   BusId  "+ busStopID+" StopType "+getStopType+" Noti "+notiType);
 					/*
 					sql = "SELECT TOP 1 b.id FROM tdsb_i_BusStopBasic b WITH(NOLOCK) "
 							+ "INNER JOIN tdsb_i_runpoints_position rp WITH(NOLOCK) ON b.busStopGuid = rp.busStopGuid "
@@ -857,13 +850,13 @@ public class GMSDispatcher implements Runnable {
 					Runnable notifyCheckInRunnable = new Runnable() {
 					      public void run(){
 					    	  try {
-						    	  System.out.println(runID +"CheckIn Thread is Running.....");
 						          TimerTask task =new TimerTask() {
 									@Override
 									public void run() {
-										System.out.println(runID+"CheckIn Thread is called...."+scheduleMinute);
 										QueryHelper qh = new QueryHelper();
 										ResultSet rs2 = null;
+										ResultSet rs5 = null;
+
 										try {
 											String arrIdd ="0";
 											qh.clearParams();
@@ -892,23 +885,38 @@ public class GMSDispatcher implements Runnable {
 													ResultSet rsPoints1 = qh.runQueryStreamResults(sql);
 													while(rsPoints1.next()) {
 														int ignitionStatus = rsPoints1.getInt("ignitionstatus");
-														System.out.println("ignitionStatus on Thread is "+ignitionStatus+"distance  "+rsPoints1.getDouble("distanceMet"));
 														if(ignitionStatus==144 || ignitionStatus==4) {
 															if(rsPoints1.getDouble("distanceMet") > 250.0) {
-																System.out.println("Notification Sent");
-																sql = "INSERT INTO tdsb_i_run_initial (route_id, sn_imei_id, arrival_time,morning,after_school,departure_time,routeId) VALUES(?,?,?,?,?,?,?)";
-																helper.clearParams();
-																helper.addParam(runID);
-																helper.addParam(sn_imei_id);
-																helper.addParam(formatString.format(currenttime));
-																helper.addParam(1);
-																helper.addParam(0);
-																helper.addParam(formatString.format(Date.from(currenttime.toInstant().plusSeconds(5))));
-																helper.addParam(runID);
-																helper.runQuery(sql);
-																System.out.println("Notification Sent");
-																processParentNotification(runID,999,"4",999,"");
-																this.cancel();
+																String arrIddd ="0";
+																qh.clearParams();
+																qh.addParam(1);
+																qh.addParam(sn_imei_id);
+															      sql = "SELECT sn_imei_id FROM tdsb_i_run_initial WITH(NOLOCK)";
+																	sql += " WHERE morning = ? AND sn_imei_id = ?";
+																	sql += " AND CONVERT(CHAR(10), arrival_time , 120) =  ? ";
+																	qh.addParam(formatDateString.format(currenttime));
+
+																rs5 = qh.runQueryStreamResults(sql);
+																if(rs5.next()) {
+																	arrIddd = rs5.getString("sn_imei_id");
+																} else {
+																	arrIddd = "0";
+																}
+																rs5.close();
+																if(arrIddd.equalsIgnoreCase("0")) {
+																	sql = "INSERT INTO tdsb_i_run_initial (route_id, sn_imei_id, arrival_time,morning,after_school,departure_time,routeId) VALUES(?,?,?,?,?,?,?)";
+																	helper.clearParams();
+																	helper.addParam(runID);
+																	helper.addParam(sn_imei_id);
+																	helper.addParam(formatString.format(currenttime));
+																	helper.addParam(1);
+																	helper.addParam(0);
+																	helper.addParam(formatString.format(Date.from(currenttime.toInstant().plusSeconds(5))));
+																	helper.addParam(runID);
+																	helper.runQuery(sql);
+																	processParentNotification(runID,999,"4",999,"");
+																	this.cancel();
+																}
 															}
 														}
 													}
@@ -929,7 +937,6 @@ public class GMSDispatcher implements Runnable {
 								  }
 					          } catch (Exception e) {
 					              e.printStackTrace();
-					              System.out.println("CheckIn Thread isInterrepted");
 					          }
 					      }
 					};
@@ -945,7 +952,6 @@ public class GMSDispatcher implements Runnable {
 									@Override
 									public void run() {
 										
-										System.out.println("CheckOut Thread called "+cal.getTime());
 										QueryHelper qh = new QueryHelper();
 										try {
 											ResultSet rs3 = null;
@@ -981,10 +987,8 @@ public class GMSDispatcher implements Runnable {
 											
 											long newDiff = DateTimeUtil.timeDiffInMin(cal.getTime(),cal2.getTime());
 											newDiff+=60;
-											System.out.println(cal2.getTime()+" current date & first date"+cal.getTime() + "Diff "+newDiff);
 											if(newDiff>720 || newDiff<-720) {
 												this.cancel();
-												System.out.println("Looks like Time is already gone");
 											}
 											
 											if(arrIddd == "0") {
@@ -1006,7 +1010,6 @@ public class GMSDispatcher implements Runnable {
 												}
 
 											
-												System.out.println("is Pick Up "+busStopid +"ignition "+ignitionStatus);
 												rsPoints2.close();
 												if(ignitionStatus==144 |ignitionStatus==4) {
 
@@ -1034,14 +1037,12 @@ public class GMSDispatcher implements Runnable {
 																qh.addParam(formatString.format(Date.from(currenttime.toInstant().plusSeconds(5))));
 																qh.addParam(runID);
 																qh.runQuery(sql);
-																System.out.println(" After School Notification Sent");
 																processParentNotification(runID,999,"5",999,"");
 																this.cancel();
 																
 															}
 															 if(distanceMeet>1000) {
 																 this.cancel();
-																 System.out.println("Distance is too large");
 															 }
 												      }			
 												 }
@@ -1066,7 +1067,6 @@ public class GMSDispatcher implements Runnable {
 							
 					    	  }catch (Exception e) {
 					              e.printStackTrace();
-					              System.out.println("CheckOut Thread isInterrepted");
 					          }
 					      }
 					};
