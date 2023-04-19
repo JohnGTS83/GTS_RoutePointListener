@@ -131,9 +131,10 @@ public class GMSDispatcher implements Runnable {
 	
 	public int isCheckin(int alarmId,int trackerTypeid) {
 		int checkInCheckOut = -1;
-		if(alarmId == 26 || alarmId == 10) { //Checkpout
+		
+		if(alarmId == 26 || alarmId == 10 || alarmId == 144 ) { //Checkpout
 			checkInCheckOut = 0;
-		} else if(alarmId == 27 || alarmId == 2) { //CheckIn
+		} else if(alarmId == 27 || alarmId == 2 || alarmId == 145 ) { //CheckIn
 			checkInCheckOut = 1;
 		}
 		return checkInCheckOut;
