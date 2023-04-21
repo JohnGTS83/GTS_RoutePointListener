@@ -475,7 +475,7 @@ public class GMSDispatcher implements Runnable {
 	}
 	public static String getRunFirstStartTime(int rid){
 		QueryHelper helper = new QueryHelper();
-		Calendar cal = Calendar.getInstance();
+//		Calendar cal = Calendar.getInstance();
 		String dt = null;
 		try{
 			String sql = "SELECT  r.StartTime,r.id as runs_id, rr.route_name,rr.localroute  " + 
@@ -525,6 +525,7 @@ public class GMSDispatcher implements Runnable {
 					stop.setId(rs20.getInt("id"));
 					stopDto.add(stop);
 				}
+				rs20.close();
 				List<AlertDTO> schoolStopDto = stopDto.stream()
 					      .filter(stopp -> stopp.getType()==3)
 					      .collect(Collectors.toList());
@@ -599,6 +600,7 @@ public class GMSDispatcher implements Runnable {
 					stop.setId(rs20.getInt("id"));
 					stopDto.add(stop);
 				}	
+				rs20.close();
 					List<AlertDTO> schoolStopDto = stopDto.stream()
 					      .filter(stopp -> stopp.getType()==2)
 					      .collect(Collectors.toList());
@@ -855,8 +857,6 @@ public class GMSDispatcher implements Runnable {
 									@Override
 									public void run() {
 										QueryHelper qh = new QueryHelper();
-										ResultSet rs2 = null;
-										ResultSet rs5 = null;
 
 										try {
 											String arrIdd ="0";
@@ -868,7 +868,7 @@ public class GMSDispatcher implements Runnable {
 												sql += " AND CONVERT(CHAR(10), arrival_time , 120) =  ? ";
 												qh.addParam(formatDateString.format(currenttime));
 
-											rs2 = qh.runQueryStreamResults(sql);
+											ResultSet rs2 = qh.runQueryStreamResults(sql);
 											if(rs2.next()) {
 												arrIdd = rs2.getString("sn_imei_id");
 											} else {
@@ -897,7 +897,7 @@ public class GMSDispatcher implements Runnable {
 																	sql += " AND CONVERT(CHAR(10), arrival_time , 120) =  ? ";
 																	qh.addParam(formatDateString.format(currenttime));
 
-																rs5 = qh.runQueryStreamResults(sql);
+																	ResultSet rs5 = qh.runQueryStreamResults(sql);
 																if(rs5.next()) {
 																	arrIddd = rs5.getString("sn_imei_id");
 																} else {
@@ -1027,6 +1027,7 @@ public class GMSDispatcher implements Runnable {
 															if(rsPoints4.next()) {
 																distanceMeet = rsPoints4.getDouble("distanceMet");
 															}
+															rsPoints4.close();
 															 if(distanceMeet>250 && distanceMeet<1000) {
 																sql = "INSERT INTO tdsb_i_run_initial (route_id, sn_imei_id, arrival_time,morning,after_school,departure_time,routeId) VALUES(?,?,?,?,?,?,?)";
 																qh.clearParams();

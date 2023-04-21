@@ -51,7 +51,7 @@ public class GTMinaServer {
 		
 //		EmailUtil.sendReportMail("Route Alert", "This is a route alert", "aawte.umesh@avibha.com,aawte.umesh@gmail.com");
 		//yyyy/MM/dd HH:mm:ss
-//		new GMSDispatcher("861074027436776|43.584022999999995|-80.553105|25633247|116|2021-01-25 07:38:53").run();
+//		new GMSDispatcher("861074027436776|43.584022999999995|-80.553105|25633247|144|2021-01-25 07:38:53").run();
 //		new GMSDispatcher("862951023206536|43.69536603567597|-79.50106366688523|25633247|26|2021-01-25 13:18:53").run();
 		
 		//TO avoide multiple connection pool creation in threads.
@@ -71,7 +71,7 @@ public class GTMinaServer {
 	        DatagramSessionConfig dcfg =  (DatagramSessionConfig) acceptor.getSessionConfig();
 	        dcfg.setReadBufferSize(1024);
 	        acceptor.bind(new InetSocketAddress(port));
-	        Loger.log(Loger.INFO,"UDP alert server listening on port " + port);
+	        System.out.println("UDP alert server listening on port " + port);
 		} catch(Exception e) {
     	   e.printStackTrace();
 		}
