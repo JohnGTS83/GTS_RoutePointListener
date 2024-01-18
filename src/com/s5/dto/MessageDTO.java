@@ -9,6 +9,7 @@ public class MessageDTO {
 	private double longitude;
 	private String l_datetime;
 	private int alarm_id;
+	private int studentCountId;
 	
 	private Date lDate;
 
@@ -47,6 +48,13 @@ public class MessageDTO {
 	}
 	public void setlDate(Date lDate) {
 		this.lDate = lDate;
+	}
+	
+	public int getStudentCountId() {
+		return studentCountId;
+	}
+	public void setStudentCountId(int studentCountId) {
+		this.studentCountId = studentCountId;
 	}
 	@Override
 	public String toString() {

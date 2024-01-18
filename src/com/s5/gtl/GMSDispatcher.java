@@ -56,6 +56,8 @@ public class GMSDispatcher implements Runnable {
 			messageDto.setLongitude(Double.parseDouble(messageFields[2]));
 			messageDto.setAlarm_id(Integer.parseInt(messageFields[4]));
 			messageDto.setL_datetime(messageFields[5]); //yyyy-MM-dd HH:mm:ss -  2020-10-06 11:53:44
+			if(messageFields.length==7) 
+				messageDto.setStudentCountId(Integer.parseInt(messageFields[6].trim()));
 			UserTrackerDTO dtoUserTracker = getUserTracker(messageDto.getSn_imei_id());
 			if(dtoUserTracker != null) {
 				messageDto.setlDate(DateTimeUtil.parseToDefaultDateTimeWitoutTz(messageFields[5],"yyyy-MM-dd HH:mm:ss",dtoUserTracker.getTimeZoneOffSet(),dtoUserTracker.isDayLight()));	
@@ -392,9 +394,10 @@ public class GMSDispatcher implements Runnable {
 										arrId = 0;
 									}
 									rs1.close();
+									messageDto.setStudentCountId(50);
 //									System.out.println("Adding/Updating: " + arrId);
 									if(arrId == 0) {
-										sql = "INSERT INTO tdsb_i_run_arrival (route_id, rpid, sn_imei_id, arrival_time,point_order,BusStopId,departure_time,routeId,busStopType) VALUES(?,?,?,?,?,?,?,?,?)";
+										sql = "INSERT INTO tdsb_i_run_arrival (route_id, rpid, sn_imei_id, arrival_time,point_order,BusStopId,departure_time,routeId,busStopType,student_count_id) VALUES(?,?,?,?,?,?,?,?,?,?)";
 										helper.clearParams();
 										helper.addParam(dto.getId());
 										helper.addParam(rpid);
@@ -405,19 +408,30 @@ public class GMSDispatcher implements Runnable {
 										helper.addParam(formatString.format(Date.from(messageDto.getlDate().toInstant().plusSeconds(5))));
 										helper.addParam(dto.getRouteFKId());
 										helper.addParam(getStopType(dto.getStopType()));
+										helper.addParam(messageDto.getStudentCountId());
 										helper.runQuery(sql);
 										dto.setLateMinuts(diff);
-										processRouteNotification(messageDto,dto);
-										processParentNotification(dto.getId(),busStopIdForParent,getStopType(dto.getStopType())+"",0,dto.getStopId());
+										if(messageDto.getAlarm_id() != 117) {
+											processRouteNotification(messageDto,dto);
+											processParentNotification(dto.getId(),busStopIdForParent,getStopType(dto.getStopType())+"",0,dto.getStopId());
+										}
 
 //											System.out.println("Push notification sent.");
 //											getNextStopIdByBusStopId(dto.getId(),dto.getStopType(),dto.getStopNumber(),StringUtils.trimToEmpty(rsPoints.getString("runGuid")));
 									} else {
-										sql = "UPDATE tdsb_i_run_arrival SET departure_time = ? WHERE id = ?";
-										helper.clearParams();
-										helper.addParam(formatString.format(messageDto.getlDate()));
-										helper.addParam(arrId);
-										helper.runQuery(sql);
+										sql = "UPDATE tdsb_i_run_arrival SET departure_time = ?,student_count_id=? WHERE id = ?";
+										if(messageDto.getAlarm_id() == 117) {
+											helper.addParam(formatString.format(messageDto.getlDate()));
+											helper.addParam(messageDto.getStudentCountId());
+											helper.addParam(arrId);
+											helper.runQuery(sql);
+										}else {
+											sql = "UPDATE tdsb_i_run_arrival SET departure_time = ? WHERE id = ?";
+											helper.clearParams();
+											helper.addParam(formatString.format(messageDto.getlDate()));
+											helper.addParam(arrId);
+											helper.runQuery(sql);
+										}
 									}
 //							} else {
 //								System.out.println("Not In Time");
