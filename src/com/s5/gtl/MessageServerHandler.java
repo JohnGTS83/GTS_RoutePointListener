@@ -16,7 +16,7 @@ import com.s5.dao.TrackerDetailDAO;
 
 public class MessageServerHandler extends IoHandlerAdapter {
 	
-	ExecutorService service = Executors.newFixedThreadPool(20);
+	ExecutorService service = Executors.newFixedThreadPool(30);
 	private static final CharsetDecoder CHARSET = Charset.forName("UTF-8").newDecoder();
 	
 	@Override

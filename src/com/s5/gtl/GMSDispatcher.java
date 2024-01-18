@@ -471,6 +471,16 @@ public class GMSDispatcher implements Runnable {
 			newStop =3;
 		}
 		
+		if(stop.equalsIgnoreCase("HOME_DROPOFF")) {
+			newStop = 1;
+		}else if(stop.equalsIgnoreCase("HOME_PICKUP")) {
+			newStop = 1;
+//		} else if(stop.equalsIgnoreCase("SCHOOL_DROPOFF")) {
+//			newStop = PushNotificationEmun.BUSREACHEDATSCHOOL;
+		}
+		
+		
+		
 		return newStop;
 	}
 	public static String getRunFirstStartTime(int rid){

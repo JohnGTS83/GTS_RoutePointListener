@@ -28,7 +28,8 @@ import com.s5.dto.PushNotificationEmun;
 import com.s5.dto.PushResposeDTO;
 
 public class PushNotification {
-	private static String AUTH_KEY_FCM = "AAAAAvsDvbo:APA91bHPQEWJpQ9vI6BqKzRO1fL5iSTEB2aKWlO2mbeunXjO9L5OGdOmdPxIhjFhbSrkzMKIvU3rf90tTVhN2-qU7YzPCtK_Zk4TBYHLIm0EBFlohGP5UeGb-aN6Lk4CmXc1GxFygcU-";
+//	private static String AUTH_KEY_FCM = "AAAAAvsDvbo:APA91bHPQEWJpQ9vI6BqKzRO1fL5iSTEB2aKWlO2mbeunXjO9L5OGdOmdPxIhjFhbSrkzMKIvU3rf90tTVhN2-qU7YzPCtK_Zk4TBYHLIm0EBFlohGP5UeGb-aN6Lk4CmXc1GxFygcU-";
+	private static String AUTH_KEY_FCM = "AAAAAvsDvbo:APA91bF0KCK_djMjQwDd_utJRYZP-4QDDseMxlz3L7BHoIEbvf6tiQsJKGRWcP-OyG5V9F8DsFWRf_q3Gr64UYQjCRfzZ6lFvYVXLIqBEnpPYRAPRugQTzgtckrNRJ7rOC4lIBe17ZfA";
 	 public final static String AUTH_KEY_FCM_IOS = "AAAAAy5e4sw:APA91bHBInXo3-pFxPDWjQcY3A0gcadMK0zhYUWnZiPcYqCDgaXj0oDDnqY-jtVHolG0IYTOI2NUrZ27eyMq_3A7kcLaAF0MbiBQ9AuJFgNW9NkN6gnnV9btBGwadBBKABnJ08bG0dqz";
 	public final static String API_URL_FCM = "https://fcm.googleapis.com/fcm/send";
 
@@ -153,8 +154,8 @@ public class PushNotification {
 		datapayload.addProperty("to", DeviceIdKey.trim());
 		datapayload.addProperty("priority", "high");
 
-//		info.addProperty("foreground", true);
-//		info.addProperty("click_action", "FCM_PLUGIN_ACTIVITY");
+		info.addProperty("foreground", true);
+		info.addProperty("click_action", "FCM_PLUGIN_ACTIVITY");
 
 //		JsonObject data = new JsonObject();
 //		data.addProperty("param1", "value1");
@@ -199,14 +200,15 @@ public class PushNotification {
 		}
 		in.close();
 	}
-//	public static void main(String [] arg) {
-//		int flag = 0;
-//		try {
-//			
-//			
-//			flag = sendNotificationToSmartphone("eNq1Spxg50l_hXEjYzmddi:APA91bEmDzn6ruNhDM-JRb02tkfx_efCY9fIcu4mbHRcu-r5T7dDNd1SkTLrAJ4XeChPerck9R9plxqjW_Mrdy8unkVNqpdXQp-mbUnaoa1oH_rnQ2iQJ1o4Pwv_athbjMq5cRPTZGYp",flag,PushNotificationEmun.BUSREACHEDATSCHOOL,646);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
+	public static void main(String [] arg) {
+		int flag = 0;
+		try {
+			
+			flag = 3;
+//			flag = sendNotificationToSmartphone("fjj4dyxOQPW0q2JalDx-9m:APA91bHO6TpKqbc5XV5SCrLiNQVesbpO1llEyiiq1mC0KNzZsxpBIyqa6tSQuULSVn5jWfqmqVQalvAeBNE5iW71zfMEbHAP5PctsQ3zqizGu3YAPt_AmcESPYgugGsK1vUDqhnVcLqK",flag,PushNotificationEmun.BUSREACHEDATSCHOOL,646);
+			pushFCMNotification("fjj4dyxOQPW0q2JalDx-9m:APA91bHO6TpKqbc5XV5SCrLiNQVesbpO1llEyiiq1mC0KNzZsxpBIyqa6tSQuULSVn5jWfqmqVQalvAeBNE5iW71zfMEbHAP5PctsQ3zqizGu3YAPt_AmcESPYgugGsK1vUDqhnVcLqK",flag,PushNotificationEmun.BUSREACHEDATSCHOOL,646);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }
