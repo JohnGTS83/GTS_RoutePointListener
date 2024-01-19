@@ -394,7 +394,6 @@ public class GMSDispatcher implements Runnable {
 										arrId = 0;
 									}
 									rs1.close();
-									messageDto.setStudentCountId(50);
 //									System.out.println("Adding/Updating: " + arrId);
 									if(arrId == 0) {
 										sql = "INSERT INTO tdsb_i_run_arrival (route_id, rpid, sn_imei_id, arrival_time,point_order,BusStopId,departure_time,routeId,busStopType,student_count_id) VALUES(?,?,?,?,?,?,?,?,?,?)";
