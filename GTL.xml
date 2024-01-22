@@ -4,10 +4,10 @@
       <IpServer>127.0.0.1</IpServer>
       <SqlServerName>localhost</SqlServerName>
       <DataBase>gps</DataBase>
-      <PasswordDB>s51234</PasswordDB>
+      <PasswordDB>s512345</PasswordDB>
       <UserDB>s5</UserDB>
       <LiveDataBase>gps</LiveDataBase>
-      <LivePasswordDB>s51234</LivePasswordDB>
+      <LivePasswordDB>s512345</LivePasswordDB>
       <LiveUserDB>s5</LiveUserDB>
       <DevMode>true</DevMode>
 	  <PortListener>11500</PortListener>

@@ -9,7 +9,7 @@ public class MessageDTO {
 	private double longitude;
 	private String l_datetime;
 	private int alarm_id;
-	private int studentCountId;
+	private long studentCountId;
 	
 	private Date lDate;
 
@@ -50,10 +50,10 @@ public class MessageDTO {
 		this.lDate = lDate;
 	}
 	
-	public int getStudentCountId() {
+	public long getStudentCountId() {
 		return studentCountId;
 	}
-	public void setStudentCountId(int studentCountId) {
+	public void setStudentCountId(long studentCountId) {
 		this.studentCountId = studentCountId;
 	}
 	@Override

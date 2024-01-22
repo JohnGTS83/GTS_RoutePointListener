@@ -57,7 +57,7 @@ public class GMSDispatcher implements Runnable {
 			messageDto.setAlarm_id(Integer.parseInt(messageFields[4]));
 			messageDto.setL_datetime(messageFields[5]); //yyyy-MM-dd HH:mm:ss -  2020-10-06 11:53:44
 			if(messageFields.length==7) 
-				messageDto.setStudentCountId(Integer.parseInt(messageFields[6].trim()));
+				messageDto.setStudentCountId(Long.parseLong(messageFields[6].trim()));
 			UserTrackerDTO dtoUserTracker = getUserTracker(messageDto.getSn_imei_id());
 			if(dtoUserTracker != null) {
 				messageDto.setlDate(DateTimeUtil.parseToDefaultDateTimeWitoutTz(messageFields[5],"yyyy-MM-dd HH:mm:ss",dtoUserTracker.getTimeZoneOffSet(),dtoUserTracker.isDayLight()));	
