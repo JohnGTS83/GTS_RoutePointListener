@@ -100,7 +100,7 @@ public class GMSDispatcher implements Runnable {
 		}
 		return dtoUserTracker;
 	}
-
+/*
 	public int getTrackerTypeIfRouteUser(String imei) {
 		QueryHelper helper = new QueryHelper();
 		int typeid = 0;
@@ -118,7 +118,7 @@ public class GMSDispatcher implements Runnable {
 		}
 		return typeid;
 	}
-	
+*/
 	public boolean isStop(int alarmId,int trackerTypeid) {
 		if(trackerTypeid == AlarmEnum.GMS50_Device_Tracker_ID && (ArrayUtils.contains(AlarmEnum.FETCH_GMS50_ALARM_ENUM, alarmId))) { //GMS50
 			return true;

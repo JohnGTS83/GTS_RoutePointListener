@@ -171,8 +171,8 @@ public class PushNotification {
 		
 		System.out.println("MESSAGE TO SEND : " + datapayload.toString());
 		
-		
-		BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+		InputStreamReader inr = new InputStreamReader(conn.getInputStream());
+		BufferedReader in = new BufferedReader(inr);
 		String inputLine;
 		StringBuffer response = new StringBuffer();
 
@@ -199,6 +199,8 @@ public class PushNotification {
 			
 		}
 		in.close();
+		inr.close();
+		
 	}
 	public static void main(String [] arg) {
 		int flag = 0;
