@@ -345,7 +345,7 @@ public class GMSDispatcher implements Runnable {
 					for (AlertDTO dto : rid) {
 						sql = "SELECT busStopIdForParent,runGuid,id, distanceMet,StartTime,OrderNumber,StopType,Description,BusStopId from (select " +
 								"((ACOS(SIN(PI()*latitude/180.0)*SIN(PI()* ? /180.0)+COS(PI()*latitude/180.0)*COS(PI()* ? /180.0)*COS(PI()* ? /180.0-PI()*longitude/180.0))*6371)*1000) AS distanceMet, " +
-								"p.id,p.BusStopId,tbp.StartTime,tbp.OrderNumber,tbp.StopType,tbp.Description,tbp.id As busStopIdForParent,tbp.runGuid " +
+								"p.id,p.BusStopId,tbp.StartTime,p.OrderNumber,tbp.StopType,tbp.Description,tbp.id As busStopIdForParent,tbp.runGuid " +
 									"from  tdsb_i_runpoints_position p WITH(NOLOCK),tdsb_i_BusStopBasic tbp WITH(NOLOCK) " +
 								"where p.route_point_id = ? and tbp.busStopGuid = p.busStopGuid and p.active = 1 ) as temp " +
 								"where distanceMet < 150 "; 
