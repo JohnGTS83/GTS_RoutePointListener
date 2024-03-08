@@ -18,7 +18,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
-import com.s5.common.EmailUtil;
+import com.s5.util.EmailUtil;
 import com.s5.common.db.QueryHelper;
 import com.s5.dao.PushNotification;
 import com.s5.dto.AlarmEnum;
@@ -418,19 +418,16 @@ public class GMSDispatcher implements Runnable {
 //											System.out.println("Push notification sent.");
 //											getNextStopIdByBusStopId(dto.getId(),dto.getStopType(),dto.getStopNumber(),StringUtils.trimToEmpty(rsPoints.getString("runGuid")));
 									} else {
-										sql = "UPDATE tdsb_i_run_arrival SET departure_time = ?,student_count_id=? WHERE id = ?";
+										helper.clearParams();
+										helper.addParam(formatString.format(messageDto.getlDate()));
 										if(messageDto.getAlarm_id() == 117) {
-											helper.addParam(formatString.format(messageDto.getlDate()));
+											sql = "UPDATE tdsb_i_run_arrival SET departure_time = ?,student_count_id=? WHERE id = ?";
 											helper.addParam(messageDto.getStudentCountId());
-											helper.addParam(arrId);
-											helper.runQuery(sql);
 										}else {
 											sql = "UPDATE tdsb_i_run_arrival SET departure_time = ? WHERE id = ?";
-											helper.clearParams();
-											helper.addParam(formatString.format(messageDto.getlDate()));
-											helper.addParam(arrId);
-											helper.runQuery(sql);
 										}
+										helper.addParam(arrId);
+										helper.runQuery(sql);
 									}
 //							} else {
 //								System.out.println("Not In Time");
